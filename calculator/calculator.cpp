@@ -1,10 +1,6 @@
-// В этом файле определения функций.
-// За основу возьмите решение предыдущей задачи.
-// В этом файле определения функций.
-// За основу возьмите решение предыдущей задачи.
-
 #include <iostream>
 #include <cmath>
+#include <vector>
 #include "calculator.h"
 
 using namespace std;
@@ -12,8 +8,8 @@ using namespace literals;
 
 bool RunCalculatorCycle() {
 
-    Number resault;
-    Number number;
+    Number resault = 0.;
+    Number number = 0.;
     Number memory = 0.;
     bool memory_is_empty = true;
     string op;
@@ -65,28 +61,24 @@ bool ReadNumber(Number& resault) {
 
         return true;
         
-    } else {    
-        cerr << "Error: Numeric operand expected" << endl;
+    }     
+    cerr << "Error: Numeric operand expected" << endl;
         
-        return false;
+return false;
          
-    }
 }
 
 bool ReadOperator(string& op) {
-
+	
+	vector<string> valid_operators {"+"s, "-"s, "*"s, "**"s, "/"s, "="s, ":"s, "q"s, "c"s, "s", "l"s};
+	
     if (cin >> op) {
-        if (op.size() == 1 && "+-*//=:qcsl"s.find_first_of(op) != string::npos)  {
-
-            return true;
-
-        } else if (op.size() == 2 && op == "**"s) {
-
-            return true;
-
-        }
+    	for (item:valid_operators) {
+    		if (item == op) {
+    			return true;
+    		}
+    	}
     }
-    
     cerr << "Error: Unknown token " << op << endl;
     
     return false;
