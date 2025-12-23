@@ -1,105 +1,63 @@
-#include <iostream>
-#include <cmath>
-#include <vector>
 #include "calculator.h"
 
-using namespace std;
-using namespace literals;
+#include <cmath>
 
-bool RunCalculatorCycle() {
+void Calculator::Set(Number n) {active_number_ = n;}
 
-    Number resault = 0.;
-    Number number = 0.;
-    Number memory = 0.;
-    bool memory_is_empty = true;
-    string op;
+Number Calculator::GetNumber() const {return active_number_;}
 
-    if (!(ReadNumber(resault)))
-        return false;
-    
-    while (true) {
-        if (ReadOperator(op)) {
-            if (op == "q"s){
-                break;
-            } else if (op == "l"s) {
-                if (memory_is_empty) {
-                    cerr << "Error: Memory is empty" << endl;
-                    return false;
-                } else {
-                    resault = memory;
-                }
-            } else if (op == ":"s) {
-                if (ReadNumber(resault)) {
-                    continue;
-                } 
-            } else if (op == "c"s) {
-                resault = 0.;
-            } else if (op == "=") {
-                cout << resault << std::endl;
-            } else if (op == "s"s) {
-                memory = resault;
-                memory_is_empty = false;
-            } else if (ReadNumber(number)) {
-                СalculateExpression(resault, number, op); 
-            } else {
-                break;
-            }
-            continue; 
-        }
+void Calculator::Add(Number n) {active_number_ += n;}
 
-        return false;    
+void Calculator::Sub(Number n) {active_number_ -= n;}
 
-    }
+void Calculator::Div(Number n) {active_number_ /= n;}
 
-    return true;
+void Calculator::Mul(Number n) {active_number_ *= n;}
+
+void Calculator::Pow(Number n) {active_number_ = std::pow(active_number_, n);}
+
+void Calculator::Save() {
+
+    memory_.Set(active_number_);
+}
+
+void Calculator::Clear() {
+
+    memory_.Clear();
+}
+
+void Calculator::Load() {
+
+    active_number_ = memory_.Value();
+}
+
+bool Calculator::HasMem() const {
+
+    return !(memory_.IsEmpty());
 
 }
 
-bool ReadNumber(Number& resault) {
+std::string Calculator::GetNumberRepr() const {return std::to_string(active_number_);}
 
-    if (cin >> resault) {
+void CalcMemory::Set(double number) {
 
-        return true;
-        
-    }     
-    cerr << "Error: Numeric operand expected" << endl;
-        
-return false;
-         
+    current_number_ = number;
+    empty_ = false;
 }
 
-bool ReadOperator(string& op) {
-	
-	vector<string> valid_operators {"+"s, "-"s, "*"s, "**"s, "/"s, "="s, ":"s, "q"s, "c"s, "s", "l"s};
-	
-    if (cin >> op) {
-    	for (item:valid_operators) {
-    		if (item == op) {
-    			return true;
-    		}
-    	}
-    }
-    cerr << "Error: Unknown token " << op << endl;
-    
-    return false;
+double CalcMemory::Value() const {
+
+    return current_number_;
 
 }
 
-void СalculateExpression(Number& resault, Number& number, string& op) {
+bool CalcMemory::IsEmpty() const {
 
-    if (op == "/"s)
-        resault /= number;
+    return empty_;
+}
 
-    if (op == "**"s)
-        resault = pow(resault, number);
+void CalcMemory::Clear() {
 
-    if (op == "*"s)
-        resault *= number;
-
-    if (op == "+")
-        resault += number;
-
-    if (op == "-")
-        resault -= number;
-
+    current_number_ = 0.0;
+    empty_ = true;
 }

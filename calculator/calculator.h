@@ -4,7 +4,50 @@
 
 using Number = double;
 
-bool RunCalculatorCycle();
-bool ReadNumber(Number& resault);
-bool ReadOperator(std::string& op);
-void СalculateExpression(Number& resault, Number& number, std::string& op);
+class CalcMemory {
+public:
+    void Set(double number);
+
+    double Value() const;
+
+    bool IsEmpty() const;
+
+    void Clear();
+
+private:
+    double current_number_ = 0.0;
+
+    bool empty_ = true;
+};
+
+class Calculator {
+public:
+    void Set(Number n);
+
+    Number GetNumber() const;
+
+    void Add(Number n);
+
+    void Sub(Number n);
+
+    void Div(Number n);
+
+    void Mul(Number n);
+
+    void Pow(Number n);
+
+    void Save();
+
+    void Clear();
+
+    void Load();
+
+    bool HasMem() const;
+
+    std::string GetNumberRepr() const;
+
+private:
+    Number active_number_ = 0;
+
+    CalcMemory memory_;
+};
