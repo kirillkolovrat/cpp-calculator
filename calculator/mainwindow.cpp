@@ -70,7 +70,8 @@ void MainWindow::SetText(const QString& text) {
 
 void MainWindow::AddText(const QString &suffix) {
 
-    SetText(NormalizeNumber(input_number_ + suffix));
+    input_number_ = NormalizeNumber(input_number_ + suffix);
+    ui->l_result->setText(input_number_);
 }
 
 void MainWindow::on_number_button_clicked() {
@@ -79,9 +80,7 @@ void MainWindow::on_number_button_clicked() {
 
     if (entering_new_number_) {
         entering_new_number_ = false;
-        SetText(sender->text());
-
-        return;
+        input_number_ = "";
     }
 
     AddText(sender->text());
@@ -98,6 +97,10 @@ void MainWindow::on_pb_comma_clicked() {
 
 void MainWindow::on_pb_backspace_clicked() {
 
+    if (entering_new_number_) {
+        return;
+    }
+
     if ((input_number_.startsWith("-") && input_number_.size() == 2) || input_number_.size() == 1) {
         SetText("0");
         return;
@@ -109,6 +112,10 @@ void MainWindow::on_pb_backspace_clicked() {
 
 void MainWindow::on_pb_negate_clicked() {
 
+    if (input_number_.toDouble() == 0.0) {
+        return;
+    }
+
     if (input_number_.startsWith("-")) {
         SetText(input_number_.mid(1));
     } else {
@@ -118,11 +125,15 @@ void MainWindow::on_pb_negate_clicked() {
 
 void MainWindow::SetOperation(Operation op) {
 
-    calculator_.Set(active_number_);
-    entering_new_number_ = true;
+    if (current_operation_ == Operation::NO_OPERATION) {
+        entering_new_number_ = true;
+        active_number_ = input_number_.toDouble();
+    }
 
     current_operation_ = op;
-    ui->l_formula->setText(input_number_ + " " + OpToString(op));
+    ui->l_formula->setText(QString("%1 %2")
+                               .arg(active_number_)
+                               .arg(OpToString(op)));
 }
 
 QString MainWindow::OpToString(Operation op) {
@@ -135,6 +146,8 @@ QString MainWindow::OpToString(Operation op) {
         case Operation::SUBTRACTION: return "−";
         case Operation::POWER: return "^";
     }
+
+    return "";
 }
 
 void MainWindow::on_pb_power_clicked() {
@@ -165,31 +178,34 @@ void MainWindow::on_pb_add_clicked() {
 void MainWindow::on_pb_equal_clicked() {
 
     ui->l_formula->setText(QString("%1 %2 %3 =")
-                                 .arg(calculator_.GetNumber())
+                                 .arg(active_number_)
                                  .arg(OpToString(current_operation_))
                                  .arg(input_number_));
 
+    calculator_.Set(active_number_);
+
     switch(current_operation_) {
         case Operation::ADDITION:
-            calculator_.Add(active_number_);
+            calculator_.Add(input_number_.toDouble());
             break;
         case Operation::DIVISION:
-            calculator_.Div(active_number_);
+            calculator_.Div(input_number_.toDouble());
             break;
         case Operation::MULTIPLICATION:
-            calculator_.Mul(active_number_);
+            calculator_.Mul(input_number_.toDouble());
             break;
         case Operation::SUBTRACTION:
-            calculator_.Sub(active_number_);
+            calculator_.Sub(input_number_.toDouble());
             break;
         case Operation::POWER:
-            calculator_.Pow(active_number_);
+            calculator_.Pow(input_number_.toDouble());
             break;
         default:
             return;
     }
 
     entering_new_number_ = true;
+    current_operation_ = Operation::NO_OPERATION;
     active_number_ = calculator_.GetNumber();
     input_number_ = QString::number(active_number_);
     ui->l_result->setText(input_number_);
@@ -204,7 +220,11 @@ void MainWindow::on_pb_reset_clicked() {
 
 void MainWindow::on_pb_ms_clicked() {
 
-    calculator_.Set(active_number_);
+    if (current_operation_ == Operation::NO_OPERATION) {
+        calculator_.Set(input_number_.toDouble());
+    } else {
+        calculator_.Set(active_number_);
+    }
     calculator_.Save();
     ui->l_memory->setText("M");
 }
@@ -220,6 +240,9 @@ void MainWindow::on_pb_mr_clicked() {
     if (calculator_.HasMem()) {
         calculator_.Load();
         active_number_ = calculator_.GetNumber();
-        ui->l_result->setText(QString::number(active_number_));
+        input_number_ = QString::number(active_number_);
+        ui->l_result->setText(input_number_);
+
+        entering_new_number_ = true;
     }
 }
