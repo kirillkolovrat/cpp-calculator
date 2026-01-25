@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include <QDebug>
 #include <QPushButton>
 
 
@@ -21,11 +20,9 @@ QString NormalizeNumber(const QString &text) {
         return "0";
     }
     if (text.startsWith('.')) {
-        // Рекурсивный вызов.
         return NormalizeNumber("0" + text);
     }
     if (text.startsWith('-')) {
-        // Рекурсивный вызов.
         return "-" + NormalizeNumber(text.mid(1));
     }
     if (text.startsWith('0') && !text.startsWith("0.")) {
