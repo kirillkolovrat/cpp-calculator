@@ -1,7 +1,6 @@
 #pragma once
 
-#include "calculator.h"
-
+#include "enums.h"
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
@@ -10,15 +9,6 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
-enum class Operation {
-    NO_OPERATION,
-    ADDITION,
-    SUBTRACTION,
-    MULTIPLICATION,
-    DIVISION,
-    POWER
-};
-
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
@@ -26,19 +16,26 @@ public:
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
-private:
-    void SetText(const QString& text);
+    void SetInputText(const std::string& text);
 
-    void AddText(const QString& suffix);
+    void SetErrorText(const std::string& text);
 
-    void SetOperation(Operation op);
+    void SetFormulaText(const std::string& text);
 
-    static QString OpToString(Operation op);
+    void SetMemText(const std::string& text);
+
+    void SetExtraKey(const std::optional<std::string>& key);
+
+    void SetDigitKeyCallback(std::function<void(int key)> cb);
+
+    void SetProcessOperationKeyCallback(std::function<void(Operation key)> cb);
+
+    void SetProcessControlKeyCallback(std::function<void(ControlKey key)> cb);
+
+    void SetControllerCallback(std::function<void(ControllerType controller)> cb);
 
 private slots:
     void on_number_button_clicked();
-
-    void on_pb_comma_clicked();
 
     void on_pb_backspace_clicked();
 
@@ -64,16 +61,21 @@ private slots:
 
     void on_pb_mr_clicked();
 
+    void cmb_controller_currentIndexChanged();
+
+    void on_tb_extra_clicked();
+
 private:
     Ui::MainWindow* ui;
 
-    Calculator calculator_;
+    std::optional<std::string> extra_key_;
 
-    QString input_number_;
+    std::function<void(Operation key)> operation_cb_;
 
-    Number active_number_ = 0;
+    std::function<void(int key)> digit_cb_;
 
-    Operation current_operation_= Operation::NO_OPERATION;
+    std::function<void(ControlKey key)> control_cb_;
 
-    bool entering_new_number_ = true;
+    std::function<void(ControllerType controller)> controller_cb_;
+
 };

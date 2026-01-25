@@ -38,11 +38,10 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
 
     ui->setupUi(this);
+
     ui->l_result->setText("0");
     ui->l_memory->setText("");
     ui->l_formula->setText("");
-
-    SetText("0");
 
     connect(ui->pb_zero, &QPushButton::clicked, this, &MainWindow::on_number_button_clicked);
     connect(ui->pb_one, &QPushButton::clicked, this, &MainWindow::on_number_button_clicked);
@@ -54,6 +53,8 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->pb_seven, &QPushButton::clicked, this, &MainWindow::on_number_button_clicked);
     connect(ui->pb_eight, &QPushButton::clicked, this, &MainWindow::on_number_button_clicked);
     connect(ui->pb_nine, &QPushButton::clicked, this, &MainWindow::on_number_button_clicked);
+
+    connect(ui->cmb_controller, &QComboBox::currentIndexChanged, this, &MainWindow::cmb_controller_currentIndexChanged);
 }
 
 MainWindow::~MainWindow() {
@@ -61,188 +62,134 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
-void MainWindow::SetText(const QString& text) {
-
-    input_number_ = text;
-    active_number_ = input_number_.toDouble();
-    ui->l_result->setText(input_number_);
-}
-
-void MainWindow::AddText(const QString &suffix) {
-
-    input_number_ = NormalizeNumber(input_number_ + suffix);
-    ui->l_result->setText(input_number_);
-}
-
 void MainWindow::on_number_button_clicked() {
-
     QPushButton* sender = dynamic_cast<QPushButton*>(QObject::sender());
-
-    if (entering_new_number_) {
-        entering_new_number_ = false;
-        input_number_ = "";
-    }
-
-    AddText(sender->text());
+    digit_cb_(sender->text().toInt());
 }
 
-void MainWindow::on_pb_comma_clicked() {
-
-    if (input_number_.contains(".")) {
-        return;
-    }
-
-    AddText(".");
+void MainWindow::on_tb_extra_clicked() {
+    control_cb_(ControlKey::EXTRA_KEY);
 }
 
 void MainWindow::on_pb_backspace_clicked() {
-
-    if (entering_new_number_) {
-        return;
-    }
-
-    if ((input_number_.startsWith("-") && input_number_.size() == 2) || input_number_.size() == 1) {
-        SetText("0");
-        return;
-    }
-
-    input_number_.chop(1);
-    ui->l_result->setText(input_number_);
+    control_cb_(ControlKey::BACKSPACE);
 }
 
 void MainWindow::on_pb_negate_clicked() {
-
-    if (input_number_.toDouble() == 0.0) {
-        return;
-    }
-
-    if (input_number_.startsWith("-")) {
-        SetText(input_number_.mid(1));
-    } else {
-        SetText("-" + input_number_);
-    }
-}
-
-void MainWindow::SetOperation(Operation op) {
-
-    if (current_operation_ == Operation::NO_OPERATION) {
-        entering_new_number_ = true;
-        active_number_ = input_number_.toDouble();
-    }
-
-    current_operation_ = op;
-    ui->l_formula->setText(QString("%1 %2")
-                               .arg(active_number_)
-                               .arg(OpToString(op)));
-}
-
-QString MainWindow::OpToString(Operation op) {
-
-    switch(op) {
-        case Operation::NO_OPERATION: return "";
-        case Operation::ADDITION: return "+";
-        case Operation::DIVISION: return "÷";
-        case Operation::MULTIPLICATION: return "×";
-        case Operation::SUBTRACTION: return "−";
-        case Operation::POWER: return "^";
-    }
-
-    return "";
+    control_cb_(ControlKey::PLUS_MINUS);
 }
 
 void MainWindow::on_pb_power_clicked() {
-
-    SetOperation(Operation::POWER);
+    operation_cb_(Operation::POWER);
 }
 
 void MainWindow::on_pb_divide_clicked() {
-
-    SetOperation(Operation::DIVISION);
+    operation_cb_(Operation::DIVISION);
 }
 
 void MainWindow::on_pb_multiplicate_clicked() {
-
-    SetOperation(Operation::MULTIPLICATION);
+    operation_cb_(Operation::MULTIPLICATION);
 }
 
 void MainWindow::on_pb_substract_clicked() {
-
-    SetOperation(Operation::SUBTRACTION);
+    operation_cb_(Operation::SUBTRACTION);
 }
 
 void MainWindow::on_pb_add_clicked() {
-
-    SetOperation(Operation::ADDITION);
+    operation_cb_(Operation::ADDITION);
 }
 
 void MainWindow::on_pb_equal_clicked() {
-
-    ui->l_formula->setText(QString("%1 %2 %3 =")
-                                 .arg(active_number_)
-                                 .arg(OpToString(current_operation_))
-                                 .arg(input_number_));
-
-    calculator_.Set(active_number_);
-
-    switch(current_operation_) {
-        case Operation::ADDITION:
-            calculator_.Add(input_number_.toDouble());
-            break;
-        case Operation::DIVISION:
-            calculator_.Div(input_number_.toDouble());
-            break;
-        case Operation::MULTIPLICATION:
-            calculator_.Mul(input_number_.toDouble());
-            break;
-        case Operation::SUBTRACTION:
-            calculator_.Sub(input_number_.toDouble());
-            break;
-        case Operation::POWER:
-            calculator_.Pow(input_number_.toDouble());
-            break;
-        default:
-            return;
-    }
-
-    entering_new_number_ = true;
-    current_operation_ = Operation::NO_OPERATION;
-    active_number_ = calculator_.GetNumber();
-    input_number_ = QString::number(active_number_);
-    ui->l_result->setText(input_number_);
+    control_cb_(ControlKey::EQUALS);
 }
 
 void MainWindow::on_pb_reset_clicked() {
-
-    current_operation_ = Operation::NO_OPERATION;
-    ui->l_formula->setText("");
-    SetText("0");
+    control_cb_(ControlKey::CLEAR);
 }
 
 void MainWindow::on_pb_ms_clicked() {
-
-    if (current_operation_ == Operation::NO_OPERATION) {
-        calculator_.Set(input_number_.toDouble());
-    } else {
-        calculator_.Set(active_number_);
-    }
-    calculator_.Save();
-    ui->l_memory->setText("M");
+    control_cb_(ControlKey::MEM_SAVE);
 }
 
 void MainWindow::on_pb_mc_clicked() {
-
-    calculator_.Clear();
-    ui->l_memory->setText("");
+    control_cb_(ControlKey::MEM_CLEAR);
 }
 
 void MainWindow::on_pb_mr_clicked() {
+    control_cb_(ControlKey::MEM_LOAD);
+}
 
-    if (calculator_.HasMem()) {
-        calculator_.Load();
-        active_number_ = calculator_.GetNumber();
-        input_number_ = QString::number(active_number_);
-        ui->l_result->setText(input_number_);
+void MainWindow::cmb_controller_currentIndexChanged(){
+    int current_index_cb = ui->cmb_controller->currentIndex();
 
-        entering_new_number_ = true;
+    switch (current_index_cb) {
+    case 0 :
+        controller_cb_(ControllerType::DOUBLE);
+        break;
+    case 1 :
+        controller_cb_(ControllerType::FLOAT);
+        break;
+    case 2 :
+        controller_cb_(ControllerType::UINT8_T);
+        break;
+    case 3 :
+        controller_cb_(ControllerType::INT);
+        break;
+    case 4 :
+        controller_cb_(ControllerType::INT64_T);
+        break;
+    case 5 :
+        controller_cb_(ControllerType::SIZE_T);
+        break;
+    case 6 :
+        controller_cb_(ControllerType::RATIONAL);
+        break;
     }
 }
+
+void MainWindow::SetInputText(const std::string& text){
+    ui->l_result->setStyleSheet("color: black;");
+    ui->l_result ->setText(QString::fromStdString(text));
+}
+
+void MainWindow::SetErrorText(const std::string& text){
+    ui->l_result->setStyleSheet("color: red;");
+    ui->l_result->setText(QString::fromStdString(text));
+}
+
+void MainWindow::SetFormulaText(const std::string& text){
+    ui->l_formula->setText(QString::fromStdString(text));
+}
+
+void MainWindow::SetMemText(const std::string& text){
+    ui->l_memory->setText(QString::fromStdString(text));
+}
+
+void MainWindow::SetExtraKey(const std::optional<std::string>& key){
+    extra_key_ = key;
+
+    if (extra_key_.has_value()){
+        ui->tb_extra->setVisible(true);
+        ui->tb_extra->setText(QString::fromStdString(key.value()));
+
+        return;
+    }
+
+    ui->tb_extra->setVisible(false);
+};
+
+void MainWindow::SetDigitKeyCallback(std::function<void(int key)> cb){
+    digit_cb_ = cb;
+};
+
+void MainWindow::SetProcessOperationKeyCallback(std::function<void(Operation key)> cb){
+    operation_cb_ = cb;
+};
+
+void MainWindow::SetProcessControlKeyCallback(std::function<void(ControlKey key)> cb){
+    control_cb_ = cb;
+};
+
+void MainWindow::SetControllerCallback(std::function<void(ControllerType controller)> cb){
+    controller_cb_ = cb;
+};

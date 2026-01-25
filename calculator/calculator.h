@@ -1,53 +1,75 @@
 #pragma once
 
 #include <string>
+#include <optional>
+#include "rational.h"
+#include "pow.h"
 
-using Number = double;
+using Error = std::string;
 
-class CalcMemory {
-public:
-    void Set(double number);
-
-    double Value() const;
-
-    bool IsEmpty() const;
-
-    void Clear();
-
-private:
-    double current_number_ = 0.0;
-
-    bool empty_ = true;
-};
-
+template <typename T>
 class Calculator {
 public:
-    void Set(Number n);
 
-    Number GetNumber() const;
+    void Set(T n) {active_number_ = n;}
 
-    void Add(Number n);
+    T GetNumber() const {return active_number_;}
 
-    void Sub(Number n);
+    std::optional<Error> Add(T n) {
+        active_number_ += n;
+        return std::optional<Error>(std::nullopt);
+    }
 
-    void Div(Number n);
+    std::optional<Error> Sub(T n) {
+        active_number_ -= n;
+        return std::optional<Error>(std::nullopt);
+    }
 
-    void Mul(Number n);
+    std::optional<Error> Div(T n) {
+        if constexpr (std::is_same_v<T, Rational> || std::is_integral_v<T>){
+            if (n == 0)
+                return std::optional<Error>("Division by zero");
+        };
 
-    void Pow(Number n);
+        active_number_ /= n;
+        return std::optional<Error>(std::nullopt);
+    }
 
-    void Save();
+    std::optional<Error> Mul(T n) {
+        active_number_ *= n;
+        return std::optional<Error>(std::nullopt);
+    }
 
-    void Clear();
+    std::optional<Error> Pow(T n) {
+        if (active_number_ == 0 && n == 0)
+            return std::optional<Error>("Zero power to zero");
 
-    void Load();
+        if constexpr(std::is_same_v<T, Rational>){
+            if (n.GetDenominator() != 1)
+                return std::optional<Error>("Fractional power is not supported");
+        };
 
-    bool HasMem() const;
+        if constexpr (std::is_integral_v<T>) {
+            if (n < 0)
+                return std::optional<Error>("Integer negative power");
+        };
 
-    std::string GetNumberRepr() const;
+        active_number_ = ::Pow(active_number_, n);
+        return std::optional<Error>(std::nullopt);
+    }
+
+    void Save() {memory_ = active_number_;}
+
+    void Clear() {memory_.Clear();}
+
+    void Load(){active_number_ = memory_.value();}
+
+    bool GetHasMem() const {return memory_.has_value();}
+
+    std::string GetNumberRepr() const {return std::to_string(active_number_);}
 
 private:
-    Number active_number_ = 0;
+    T active_number_= 0;
 
-    CalcMemory memory_;
+    std::optional<T> memory_;
 };
