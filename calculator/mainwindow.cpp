@@ -61,62 +61,80 @@ MainWindow::~MainWindow() {
 
 void MainWindow::on_number_button_clicked() {
     QPushButton* sender = dynamic_cast<QPushButton*>(QObject::sender());
-    digit_cb_(sender->text().toInt());
+    if (digit_cb_)
+        digit_cb_(sender->text().toInt());
 }
 
 void MainWindow::on_tb_extra_clicked() {
-    control_cb_(ControlKey::EXTRA_KEY);
+    if (control_cb_)
+        control_cb_(ControlKey::EXTRA_KEY);
 }
 
 void MainWindow::on_pb_backspace_clicked() {
-    control_cb_(ControlKey::BACKSPACE);
+    if (control_cb_)
+        control_cb_(ControlKey::BACKSPACE);
 }
 
 void MainWindow::on_pb_negate_clicked() {
-    control_cb_(ControlKey::PLUS_MINUS);
+    if (control_cb_)
+        control_cb_(ControlKey::PLUS_MINUS);
 }
 
 void MainWindow::on_pb_power_clicked() {
-    operation_cb_(Operation::POWER);
+    if (operation_cb_)
+        operation_cb_(Operation::POWER);
 }
 
 void MainWindow::on_pb_divide_clicked() {
-    operation_cb_(Operation::DIVISION);
+    if operation_cb_
+        operation_cb_(Operation::DIVISION);
 }
 
 void MainWindow::on_pb_multiplicate_clicked() {
-    operation_cb_(Operation::MULTIPLICATION);
+    if (operation_cb_)
+        operation_cb_(Operation::MULTIPLICATION);
 }
 
 void MainWindow::on_pb_substract_clicked() {
-    operation_cb_(Operation::SUBTRACTION);
+    if (operation_cb_)
+        operation_cb_(Operation::SUBTRACTION);
 }
 
 void MainWindow::on_pb_add_clicked() {
-    operation_cb_(Operation::ADDITION);
+    if (operation_cb_)
+        operation_cb_(Operation::ADDITION);
 }
 
 void MainWindow::on_pb_equal_clicked() {
-    control_cb_(ControlKey::EQUALS);
+    if (control_cb_)
+        control_cb_(ControlKey::EQUALS);
 }
 
 void MainWindow::on_pb_reset_clicked() {
-    control_cb_(ControlKey::CLEAR);
+    if (control_cb_)
+        control_cb_(ControlKey::CLEAR);
 }
 
 void MainWindow::on_pb_ms_clicked() {
-    control_cb_(ControlKey::MEM_SAVE);
+    if (control_cb_)
+        control_cb_(ControlKey::MEM_SAVE);
 }
 
 void MainWindow::on_pb_mc_clicked() {
-    control_cb_(ControlKey::MEM_CLEAR);
+    if (control_cb_)
+        control_cb_(ControlKey::MEM_CLEAR);
 }
 
 void MainWindow::on_pb_mr_clicked() {
-    control_cb_(ControlKey::MEM_LOAD);
+    if (control_cb_)
+        control_cb_(ControlKey::MEM_LOAD);
 }
 
 void MainWindow::cmb_controller_currentIndexChanged(){
+
+    if (!controller_cb_)
+        return;
+
     int current_index_cb = ui->cmb_controller->currentIndex();
 
     switch (current_index_cb) {

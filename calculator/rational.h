@@ -66,36 +66,28 @@ public:
     }
 
     Rational& operator+=(const Rational& other){
-        numerator_ = numerator_ * other.denominator_ + other.numerator_ * denominator_;
-        denominator_ *= other.denominator_;
-
+        this = this + other;
         Reduction();
 
         return *this;
     }
 
     Rational& operator-=(const Rational& other){
-        numerator_ = numerator_ * other.denominator_ - other.numerator_ * denominator_;
-        denominator_ *= other.denominator_;
-
+        this = this - other;
         Reduction();
 
         return *this;
     }
 
     Rational& operator*=(const Rational& other){
-        numerator_ *= other.numerator_;
-        denominator_ *= other.denominator_;
-
+        this = this * other;
         Reduction();
 
         return *this;
     }
 
     Rational& operator/=(const Rational& other){
-        numerator_ *= other.denominator_;
-        denominator_ *= other.numerator_;
-
+        this = this / other;
         Reduction();
 
         return *this;
@@ -121,7 +113,7 @@ private:
     };
 
     int numerator_ = 0;
-    int denominator_ = 1;
+    std::int64_t denominator_ = 1;
 };
 
 inline std::istream& operator>>(std::istream& is, Rational& rat){
