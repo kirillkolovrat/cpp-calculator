@@ -25,6 +25,6 @@ enum class ControllerType {
     INT64_T,
     SIZE_T,
     DOUBLE,
-    FLOAT,
+    FLOAT,,
     RATIONAL,
 };
